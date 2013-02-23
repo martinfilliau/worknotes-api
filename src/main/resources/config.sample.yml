@@ -1,0 +1,5 @@
+solrUrl: 'http://localhost:8983/solr'
+github:
+  username: USERNAME
+  password: PASSWORD
+  repositories: ['account/repo','account/repo2']
