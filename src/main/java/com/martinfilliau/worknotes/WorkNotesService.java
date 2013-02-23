@@ -2,9 +2,12 @@ package com.martinfilliau.worknotes;
 
 import com.martinfilliau.worknotes.config.MainConfiguration;
 import com.martinfilliau.worknotes.resources.WorkNotesResource;
+import com.martinfilliau.worknotes.services.SolrHealthCheck;
+import com.martinfilliau.worknotes.services.SolrService;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
 
 /**
  *
@@ -19,7 +22,11 @@ public class WorkNotesService extends Service<MainConfiguration> {
 
     @Override
     public void run(MainConfiguration configuration, Environment environment) throws Exception {
-        environment.addResource(new WorkNotesResource());
+        final HttpSolrServer solr = new HttpSolrServer(configuration.getSolrUrl());
+        
+        environment.addHealthCheck(new SolrHealthCheck(solr));
+        environment.manage(new SolrService(solr));
+        environment.addResource(new WorkNotesResource(solr));
     }
     
     public static void main(String[] args) throws Exception {

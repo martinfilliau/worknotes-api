@@ -12,7 +12,7 @@ public class MainConfiguration extends Configuration {
     
     @NotEmpty
     @JsonProperty
-    private String solrUrl = "localhost:8983";
+    private String solrUrl = "http://localhost:8983/solr";
     
     public String getSolrUrl() {
         return solrUrl;
