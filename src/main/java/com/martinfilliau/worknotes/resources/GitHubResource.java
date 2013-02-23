@@ -40,13 +40,16 @@ public class GitHubResource {
     public Response loadCommits() throws IOException, SolrServerException {
         GitHubClient client = new GitHubClient();
         client.setCredentials(config.getUsername(), config.getPassword());
+        StringBuilder out = new StringBuilder();
         
         CommitService commits = new CommitService(client);
         RepositoryService service = new RepositoryService();
         List<Repository> repos = new ArrayList<Repository>();
+        out.append("Repositories:\n");
         for(String path : config.getRepositories()) {
             String[] splitted = path.split("/");
             repos.add(service.getRepository(splitted[0], splitted[1]));
+            out.append("* ").append(splitted[0]).append(" / ").append(splitted[1]).append("\n");
         }
         
         List<RepositoryCommit> repoCommits;
@@ -68,6 +71,6 @@ public class GitHubResource {
         }
         solr.commit();
 
-        return null;
+        return Response.ok(out.toString(), MediaType.TEXT_PLAIN).build();
     }
 }
