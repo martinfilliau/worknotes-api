@@ -1,5 +1,7 @@
 package com.martinfilliau.worknotes.representations;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -9,16 +11,26 @@ import org.apache.solr.common.SolrInputDocument;
  */
 public class Note {
     
+    @JsonProperty
     private String activity;
+    
+    @JsonProperty
     private String project;
+    
+    @JsonProperty
     private String task;
+    
+    @JsonProperty(required = false)
     private String comments;
+
+    @JsonProperty
     private Date date;
 
     /**
      * Get this representation as a Solr document
      * @return SolrInputDocument containing this representation
      */
+    @JsonIgnore
     public SolrInputDocument getSolrDocument() {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("activity", activity);
