@@ -1,6 +1,7 @@
 package com.martinfilliau.worknotes.resources;
 
 import com.martinfilliau.worknotes.representations.Note;
+import com.sun.jersey.api.NotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +14,7 @@ import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -79,5 +81,33 @@ public class WorkNotesResource {
             Logger.getLogger(WorkNotesResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         return notes;
+    }
+    
+    @GET
+    @Path("{id}")
+    public Note getById(@PathParam("id") String id) {
+        try {
+            SolrQuery query = new SolrQuery();
+            query.setQuery("id:"+id);
+            QueryResponse response = solr.query(query);
+            Iterator<SolrDocument> iter = response.getResults().iterator();
+
+            SolrDocument doc;
+            Note note;
+            while (iter.hasNext()) {
+                doc = iter.next();
+                note = new Note();
+                // TODO move this to Note, constructor from SolrDocument
+                note.setActivity((String) doc.getFieldValue("activity"));
+                note.setProject((String) doc.getFieldValue("project"));
+                note.setTask((String) doc.getFieldValue("task"));
+                note.setDate((Date) doc.getFieldValue("date"));
+                note.setComments((String) doc.getFieldValue("comments"));
+                return note;
+            }
+        } catch (SolrServerException ex) {
+            Logger.getLogger(WorkNotesResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new NotFoundException(id);
     }
 }
