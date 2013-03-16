@@ -2,6 +2,7 @@ package com.martinfilliau.worknotes.resources;
 
 import com.martinfilliau.worknotes.representations.Note;
 import com.martinfilliau.worknotes.views.NoteView;
+import com.martinfilliau.worknotes.views.NotesView;
 import com.sun.jersey.api.NotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
 /**
@@ -56,7 +56,8 @@ public class WorkNotesResource {
     }
 
     @GET
-    public List<Note> getAllNotes() {
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
+    public NotesView getAllNotes() {
         List<Note> notes = new ArrayList<Note>();
         try {
             SolrQuery query = new SolrQuery();
@@ -80,7 +81,7 @@ public class WorkNotesResource {
         } catch (SolrServerException ex) {
             Logger.getLogger(WorkNotesResource.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return notes;
+        return new NotesView(notes);
     }
     
     @GET
