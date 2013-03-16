@@ -1,6 +1,7 @@
 package com.martinfilliau.worknotes.resources;
 
 import com.martinfilliau.worknotes.representations.Note;
+import com.martinfilliau.worknotes.views.NoteView;
 import com.sun.jersey.api.NotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import org.apache.solr.common.SolrInputDocument;
  * @author martinfilliau
  */
 @Path("/worknotes")
-@Produces(MediaType.APPLICATION_JSON)
 public class WorkNotesResource {
 
     private final HttpSolrServer solr;
@@ -85,7 +85,8 @@ public class WorkNotesResource {
     
     @GET
     @Path("{id}")
-    public Note getById(@PathParam("id") String id) {
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
+    public NoteView getById(@PathParam("id") String id) {
         try {
             SolrQuery query = new SolrQuery();
             query.setQuery("id:"+id);
@@ -103,7 +104,7 @@ public class WorkNotesResource {
                 note.setTask((String) doc.getFieldValue("task"));
                 note.setDate((Date) doc.getFieldValue("date"));
                 note.setComments((String) doc.getFieldValue("comments"));
-                return note;
+                return new NoteView(note);
             }
         } catch (SolrServerException ex) {
             Logger.getLogger(WorkNotesResource.class.getName()).log(Level.SEVERE, null, ex);

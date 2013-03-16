@@ -8,6 +8,7 @@ import com.martinfilliau.worknotes.services.SolrService;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import com.yammer.dropwizard.views.ViewBundle;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 
 /**
@@ -20,6 +21,7 @@ public class WorkNotesService extends Service<MainConfiguration> {
     public void initialize(Bootstrap<MainConfiguration> bootstrap) {
         bootstrap.setName("WorkNotes");
         bootstrap.addCommand(new ImportGithubCommand());
+        bootstrap.addBundle(new ViewBundle());
     }
 
     @Override
