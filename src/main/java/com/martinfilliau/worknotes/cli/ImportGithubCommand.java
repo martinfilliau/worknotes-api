@@ -1,55 +1,51 @@
-package com.martinfilliau.worknotes.resources;
+package com.martinfilliau.worknotes.cli;
 
 import com.martinfilliau.worknotes.config.GitHubConfiguration;
+import com.martinfilliau.worknotes.config.MainConfiguration;
 import com.martinfilliau.worknotes.representations.Note;
-import java.io.IOException;
+import com.yammer.dropwizard.cli.ConfiguredCommand;
+import com.yammer.dropwizard.config.Bootstrap;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.apache.solr.client.solrj.SolrServerException;
+import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author martinfilliau
  */
-@Path("/github")
-@Produces(MediaType.APPLICATION_JSON)
-public class GitHubResource {
- 
-    private final HttpSolrServer solr;
-    private final GitHubConfiguration config;
+public class ImportGithubCommand extends ConfiguredCommand<MainConfiguration> {
     
-    public GitHubResource(HttpSolrServer solr, GitHubConfiguration config) {
-        this.solr = solr;
-        this.config = config;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImportGithubCommand.class);
+
+    public ImportGithubCommand() {
+        super("github", "Import GitHub activities");
     }
     
-    @GET
-    public Response loadCommits() throws IOException, SolrServerException {
+    @Override
+    protected void run(Bootstrap<MainConfiguration> bootstrap,
+                        Namespace namespace, 
+                        MainConfiguration configuration) throws Exception {
+        HttpSolrServer solr = new HttpSolrServer(configuration.getSolrUrl());
         GitHubClient client = new GitHubClient();
-        client.setCredentials(config.getUsername(), config.getPassword());
-        StringBuilder out = new StringBuilder();
+        client.setCredentials(configuration.getGithub().getUsername(),
+                configuration.getGithub().getPassword());
         
         CommitService commits = new CommitService(client);
         RepositoryService service = new RepositoryService();
         List<Repository> repos = new ArrayList<Repository>();
-        out.append("Repositories:\n");
-        for(String path : config.getRepositories()) {
+        for(String path : configuration.getGithub().getRepositories()) {
             String[] splitted = path.split("/");
             repos.add(service.getRepository(splitted[0], splitted[1]));
-            out.append("* ").append(splitted[0]).append(" / ").append(splitted[1]).append("\n");
+            LOGGER.info("Repo: " + splitted[0] + " / " + splitted[1]);
         }
         
         List<RepositoryCommit> repoCommits;
@@ -70,7 +66,7 @@ public class GitHubResource {
             }
         }
         solr.commit();
-
-        return Response.ok(out.toString(), MediaType.TEXT_PLAIN).build();
+        
     }
+    
 }

@@ -1,7 +1,7 @@
 package com.martinfilliau.worknotes;
 
+import com.martinfilliau.worknotes.cli.ImportGithubCommand;
 import com.martinfilliau.worknotes.config.MainConfiguration;
-import com.martinfilliau.worknotes.resources.GitHubResource;
 import com.martinfilliau.worknotes.resources.WorkNotesResource;
 import com.martinfilliau.worknotes.services.SolrHealthCheck;
 import com.martinfilliau.worknotes.services.SolrService;
@@ -19,6 +19,7 @@ public class WorkNotesService extends Service<MainConfiguration> {
     @Override
     public void initialize(Bootstrap<MainConfiguration> bootstrap) {
         bootstrap.setName("WorkNotes");
+        bootstrap.addCommand(new ImportGithubCommand());
     }
 
     @Override
@@ -28,7 +29,6 @@ public class WorkNotesService extends Service<MainConfiguration> {
         environment.addHealthCheck(new SolrHealthCheck(solr));
         environment.manage(new SolrService(solr));
         environment.addResource(new WorkNotesResource(solr));
-        environment.addResource(new GitHubResource(solr, configuration.getGithub()));
     }
     
     public static void main(String[] args) throws Exception {
